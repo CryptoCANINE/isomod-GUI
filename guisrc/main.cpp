@@ -156,14 +156,14 @@ int main(int argc, char *argv[]) {
       return 0;
     } else
       CMD(put) {
-        if (args.count() <= 4) {
+        if (argc <= 4) {
           printf("isomod put [isofile] [targetfile] [hostfile]\n");
           return 0;
         }
         const char *isofilename = argv[2];
         const char *targetfilename = argv[3];
         const char *hostfilename = argv[4];
-        bool length_override = false;
+        bool length_override = true;
 
         FILE *isofile = fopen(isofilename, "r+");
         if (NULL == isofile) {
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
         int len = getfilesize(hostfile);
         int aligned_len = ALIGN(len, 0x800);
         printf("File size on HOST is %d\n", len);
-        if (false == length_override) {
+        if (!length_override) {
           if (len > maxsize) {
             fprintf(stderr, "Host file %s is too big by %d bytes (%d > %d)\n",
                     hostfilename, len - maxsize, len, maxsize);

@@ -80,16 +80,35 @@ void Window::replacementBrowser() {
 }
 
 void Window::import() {
-  QString program = Window::OSDetection();
-  QString isomodargs = " put \"" + ui->ISOLabel->text() + "\" \"" +
-                       ui->DirLabel->text() + "\" \"" +
-                       ui->ReplacementLabel->text() + "\"";
+  QFile ISOLoc(ui->ISOLabel->text());
+  if (!ISOLoc.exists()) {
+    QMessageBox nonExistantFile;
+    nonExistantFile.critical(
+        0, "Error opening file.",
+        "Please make sure the ISO you chose exists and try again.");
+    nonExistantFile.setFixedSize(500, 200);
+  } else {
+    QFile ReplacementFileLoc(ui->ReplacementLabel->text());
+    if (!ReplacementFileLoc.exists()) {
+      QMessageBox nonExistantFile;
+      nonExistantFile.critical(0, "Error opening file.",
+                               "Please make sure the replacement file you "
+                               "chose exists and try again.");
+      nonExistantFile.setFixedSize(500, 200);
+    } else {
+      QString program = Window::OSDetection();
+      QString isomodargs = " put \"" + ui->ISOLabel->text() + "\" \"" +
+                           ui->DirLabel->text() + "\" \"" +
+                           ui->ReplacementLabel->text() + "\"";
 
-  QProcess isomod;
-  isomod.execute(program + isomodargs);
-  isomod.waitForFinished(-1);
-  QString result = isomod.readAllStandardOutput();
+      QProcess isomod;
+      isomod.execute(program + isomodargs);
+      isomod.waitForFinished(-1);
+      QString result = isomod.readAllStandardOutput();
+    }
+  }
 }
+
 /*
  * void Window::on_treeView_clicked(const QModelIndex &index)
 {

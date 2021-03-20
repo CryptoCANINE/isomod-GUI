@@ -1,4 +1,4 @@
-/* You may freely use, distribute, and modify this file */
+﻿/* You may freely use, distribute, and modify this file */
 #include <ctype.h>
 #include <inttypes.h>
 #include <memory.h>
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
       const char *isofilename = argv[2];
       const char *targetfilename = argv[3];
       const char *hostfilename = argv[4];
-      bool length_override = false;
+      bool length_override = true;
 
       FILE *isofile = fopen(isofilename, "r+");
       if (NULL == isofile) {
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
       int len = getfilesize(hostfile);
       int aligned_len = ALIGN(len, 0x800);
       printf("File size on HOST is %d\n", len);
-      if (false == length_override) {
+      if (!length_override) {
         if (len > maxsize) {
           fprintf(stderr, "Host file %s is too big by %d bytes (%d > %d)\n",
                   hostfilename, len - maxsize, len, maxsize);
