@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
       return 0;
     } else
       CMD(put) {
-        if (argc <= 4) {
+        if (args.count() <= 4) {
           printf("isomod put [isofile] [targetfile] [hostfile]\n");
           return 0;
         }
