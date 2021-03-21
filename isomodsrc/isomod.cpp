@@ -156,7 +156,6 @@ int main(int argc, char *argv[]) {
       const char *targetfilename = argv[3];
       const char *hostfilename = argv[4];
       bool length_override = true;
-
       FILE *isofile = fopen(isofilename, "r+");
       if (NULL == isofile) {
         fprintf(stderr, "Couldn't open ISO %s\n", isofilename);
@@ -193,48 +192,18 @@ int main(int argc, char *argv[]) {
       int len = getfilesize(hostfile);
       int aligned_len = ALIGN(len, 0x800);
       printf("File size on HOST is %d\n", len);
-      if (!length_override) {
-        if (len > maxsize) {
-          fprintf(stderr, "Host file %s is too big by %d bytes (%d > %d)\n",
-                  hostfilename, len - maxsize, len, maxsize);
-          fclose(hostfile);
-          fclose(isofile);
-          return 1;
-        }
-        if (uint32_t(len) != dir->file_len) {
-          if (uint32_t(aligned_len) < dir->file_len) {
-            printf(
-                "WARNING: Injecting this file will shrink the allowable size "
-                "later!\n");
-            printf(" (to %d bytes)\n", aligned_len);
-          }
-          printf(
-              "File sizes are not the same, but fittable. OK to continue? "
-              "[y/N]\n");
-          int ch = getchar();
-          if ((ch != 'y') && (ch != 'Y')) {
-            printf("Aborted\n");
-            return 1;
-          } else {
-          }
-        }
-      }
       byte *filedata = (byte *)(malloc(aligned_len));
       memset(filedata, 0, aligned_len);
       fread(filedata, 1, len, hostfile);
       fclose(hostfile);
-
       printf("Writing %d bytes to sector %u\n", len, dir->lba);
       CdSetloc(isofile, dir->lba);
       CdWrite(filedata, (aligned_len / CD_SECTOR_SIZE), isofile);
-
       dir->file_len = len;
       printf("Writing new directory to %u\n", dir_lba);
       CdSetloc(isofile, dir_lba);
       CdWrite(sec, 1, isofile);
-
       printf("Done.\n");
-
       fclose(isofile);
       return 0;
     }
