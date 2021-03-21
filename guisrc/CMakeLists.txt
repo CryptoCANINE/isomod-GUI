@@ -39,6 +39,7 @@ set(PROJECT_SOURCES
         window.cpp
         window.h
         window.ui
+        widgetstuff.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

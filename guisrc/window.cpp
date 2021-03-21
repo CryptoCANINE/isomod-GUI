@@ -11,17 +11,7 @@
 
 #include "./ui_window.h"
 
-// isomod required stuff here
-
 // now GUI stuff   \/
-
-Window::Window(QWidget *parent) : QMainWindow(parent), ui(new Ui::Window) {
-  ui->setupUi(this);
-  QObject::connect(ui->ISOBrowse, SIGNAL(clicked()), this, SLOT(ISOBrowser()));
-  QObject::connect(ui->replaceBrowse, SIGNAL(clicked()), this,
-                   SLOT(replacementBrowser()));
-  QObject::connect(ui->importButton, SIGNAL(clicked()), this, SLOT(import()));
-}
 
 Window::~Window() { delete ui; }
 
@@ -61,7 +51,7 @@ void Window::ISOBrowser() {
 
 void Window::replacementBrowser() {
   QString OpenINTPath = QFileDialog::getOpenFileName(
-      this, tr("Open an INT"), "", tr("INT files (*.INT);;All Files (*)"));
+      this, tr("Open a File"), "", tr("INT files (*.INT);;WP2 files (*.WP2);;XTR files (*.XTR);;ISO files (*.ISO);;All Files (*)"));
   if (OpenINTPath.isEmpty()) {
     QMessageBox noFileError;
     noFileError.critical(0, "Error opening file.",
@@ -98,16 +88,16 @@ void Window::import() {
     } else {
       QString program = Window::OSDetection();
       QString isomodargs = " put \"" + ui->ISOLabel->text() + "\" \"" +
-                           ui->DirLabel->text() + "\" \"" +
+                           ui->DirSelect->currentText() + "\" \"" +
                            ui->ReplacementLabel->text() + "\"";
 
       QProcess isomod;
       isomod.execute(program + isomodargs);
       isomod.waitForFinished(-1);
-      QString result = isomod.readAllStandardOutput();
     }
   }
 }
+
 
 /*
  * void Window::on_treeView_clicked(const QModelIndex &index)
