@@ -10,14 +10,6 @@ typedef uint32_t loc_t;
 typedef uint8_t byte;
 unsigned int sectorSize = 0x800;
 
-#ifdef _WIN32
-#define fseeko64 _fseeki64
-#define PACK(__Declaration__) \
-  __pragma(pack(push, 1)) __Declaration__ __pragma(pack(pop))
-#elif defined(__GNUC__)
-#define PACK(__Declaration__) __Declaration__ __attribute__((__packed__))
-#endif
-
 #define ALIGN(x, y) (((x) + ((y)-1)) & (~((y)-1)))
 
 int getfilesize(FILE* f) {
