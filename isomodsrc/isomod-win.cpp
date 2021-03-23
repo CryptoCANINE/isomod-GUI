@@ -10,6 +10,10 @@ typedef uint32_t loc_t;
 typedef uint8_t byte;
 unsigned int sectorSize = 0x800;
 
+#ifdef _WIN32
+#define fseeko64 _fseeki64
+#endif
+
 #define ALIGN(x, y) (((x) + ((y)-1)) & (~((y)-1)))
 
 int getfilesize(FILE* f) {
