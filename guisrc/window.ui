@@ -78,6 +78,19 @@
      <string/>
     </property>
    </widget>
+   <widget class="QLineEdit" name="DirLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>120</y>
+      <width>321</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
    <widget class="QLineEdit" name="ReplacementLabel">
     <property name="geometry">
      <rect>
@@ -143,16 +156,6 @@
      <string>Host File to replace with: (example: NEWLOGO.INT)</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="DirSelect">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>120</y>
-      <width>221</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -160,7 +163,7 @@
      <x>0</x>
      <y>0</y>
      <width>621</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMain">
