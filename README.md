@@ -23,6 +23,5 @@ isomod is an application that allows the injection of files into ISO images (ISO
 
 # To-do
 - Polish the GUI
-- Create Windows Release
 - Make things work and look better overall
 - Remove Sweets, and add more Noodles
