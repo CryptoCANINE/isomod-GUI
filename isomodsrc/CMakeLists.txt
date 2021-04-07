@@ -9,10 +9,17 @@ if(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mno-ms-bitfields")
 endif(WIN32)
 
+
 if(WIN32)
-    set(PROJECT_SOURCES
-      isomod-win.cpp
-    )
+    if(__i386)
+        set(PROJECT_SOURCES
+          isomod-win.cpp
+        )
+    else()
+        set(PROJECT_SOURCES
+          isomod-winx64.cpp
+        )
+    endif()
 else()
     set(PROJECT_SOURCES
       isomod.cpp

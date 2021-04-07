@@ -10,6 +10,8 @@ typedef uint32_t loc_t;
 typedef uint8_t byte;
 unsigned int sectorSize = 0x800;
 
+#define CD_SECTOR_SIZE 0x800
+#define ISO_PADSIZE 0x10
 #define ALIGN(x, y) (((x) + ((y)-1)) & (~((y)-1)))
 
 int getfilesize(FILE* f) {
@@ -61,6 +63,7 @@ bool scmplen(const char* s1, const char* s2, int len) {
   }
   return true;
 }
+
 bool streq(const char* s1, const char* s2) {
   // return (strcmp(s1, s2) == 0);
   return scmplen(s1, s2, strlen(s1));
@@ -71,11 +74,11 @@ loc_t CdTell(FILE* isofile) {
   return (s & (~(0x7FF))) / 0x800;
 }
 
-bool CdFindFileInDir(iso_directory_t*& out_dir, FILE* isofile,
-                     const char* filename, int filename_len, loc_t& out_secnum,
-                     loc_t& out_offset) {
-  byte* sec = (byte*)malloc(sectorSize);
-  iso_directory_t* dir = (iso_directory_t*)(sec);
+bool CdFindFileInDir(iso_directory_t *out_dir, FILE *isofile,
+                     const char *filename, int filename_len, loc_t *out_secnum,
+                     loc_t *out_offset) {
+  byte sec[CD_SECTOR_SIZE];
+  iso_directory_t *dir = (iso_directory_t *)(sec);
   int slen = filename_len;
   int dirp = 0;
 
@@ -88,33 +91,31 @@ bool CdFindFileInDir(iso_directory_t*& out_dir, FILE* isofile,
     if (!(dir->file_flags & 2)) {
       dlen -= 2;
     }
-    int secloc = CdTell(isofile) - 1;
     if (dlen == slen) {
       if (scmplen(dir->fileid, filename, slen) == true) {
-        out_dir = dir;
+        *out_dir = *dir;
         if (NULL != out_secnum) {
-          out_secnum = secloc;
+          *out_secnum = CdTell(isofile) - 1;
         }
         if (NULL != out_offset) {
-          out_offset = dirp;
+          *out_offset = dirp;
         }
         return true;
       }
     }
     dirp += dir->len;
-    if (dirp >= sectorSize) {
+    if (dirp >= 0x800) {
       CdRead(sec, 1, isofile);
-      dirp %= sectorSize;
+      dirp = dirp % 0x800;
     }
-    dir = (iso_directory_t*)(sec + dirp);
+    dir = (iso_directory_t *)(sec + dirp);
   }
   return false;
 }
-
-bool CdFindFile(iso_directory_t* outdir, FILE* isofile, const char* filename,
-                loc_t& out_secnum, loc_t& out_offset) {
-  const char* next;
-  const char* cur = filename;
+bool CdFindFile(iso_directory_t *outdir, FILE *isofile, const char *filename,
+                loc_t *out_secnum, loc_t *out_offset) {
+  const char *next;
+  const char *cur = filename;
   int slen;
   do {
     next = strchr(cur, '/');
@@ -158,29 +159,29 @@ int main(int argc, char* argv[]) {
       const char* targetfilename = argv[3];
       const char* hostfilename = argv[4];
       bool length_override = true;
-      FILE* isofile = fopen(isofilename, "rb+");
+      FILE *isofile = fopen(isofilename, "rb+");
       if (NULL == isofile) {
         fprintf(stderr, "Couldn't open ISO %s\n", isofilename);
         return 1;
       }
-      FILE* hostfile = fopen(hostfilename, "rb");
+      FILE *hostfile = fopen(hostfilename, "rb");
       if (NULL == hostfile) {
         fprintf(stderr, "Couldn't open host file %s\n", hostfilename);
         return 1;
       }
-      byte* sec = (byte*)(malloc(sectorSize));
-      iso_directory_t* dir = (iso_directory_t*)(sec);
-      CdSetloc(isofile, 16);
+      byte sec[CD_SECTOR_SIZE];
+      iso_directory_t *dir = (iso_directory_t *)(sec);
+      CdSetloc(isofile, ISO_PADSIZE);
       CdRead(sec, 1, isofile);
       if (ispvd(sec) == false) {
         fprintf(stderr, "%s is not an ISO file\n", isofilename);
         return 1;
       }
-      loc_t root_lba = *(loc_t*)(sec + 158);
-      printf("root lba = %x, %x\n", root_lba, root_lba * sectorSize);
+      loc_t root_lba = *(loc_t *)(sec + 158);
+      printf("root lba = %x\n", root_lba);
       CdSetloc(isofile, root_lba);
       loc_t dir_lba, dir_offset;
-      bool s = CdFindFile(dir, isofile, targetfilename, dir_lba, dir_offset);
+      bool s = CdFindFile(dir, isofile, targetfilename, &dir_lba, &dir_offset);
       if (false == s) {
         fprintf(stderr, "Could not find target file %s on ISO file %s\n",
                 targetfilename, isofilename);
@@ -188,19 +189,19 @@ int main(int argc, char* argv[]) {
       }
       CdSetloc(isofile, dir_lba);
       CdRead(sec, 1, isofile);
-      dir = (iso_directory_t*)(sec + dir_offset);
+      dir = (iso_directory_t *)(sec + dir_offset);
       printf("File size on ISO is %d\n", dir->file_len);
-      int maxsize = ALIGN(dir->file_len, sectorSize);
+      int maxsize = ALIGN(dir->file_len, 0x800);
       int len = getfilesize(hostfile);
-      int aligned_len = ALIGN(len, sectorSize);
+      int aligned_len = ALIGN(len, 0x800);
       printf("File size on HOST is %d\n", len);
-      byte* filedata = (byte*)(malloc(aligned_len));
+      byte *filedata = (byte *)(malloc(aligned_len));
       memset(filedata, 0, aligned_len);
       fread(filedata, 1, len, hostfile);
       fclose(hostfile);
       printf("Writing %d bytes to sector %u\n", len, dir->lba);
       CdSetloc(isofile, dir->lba);
-      fwrite(filedata, 1, aligned_len, isofile);
+      CdWrite(filedata, (aligned_len / CD_SECTOR_SIZE), isofile);
       dir->file_len = len;
       printf("Writing new directory to %u\n", dir_lba);
       CdSetloc(isofile, dir_lba);
