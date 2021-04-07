@@ -22,6 +22,6 @@ If there are any executables pre-built and available, you can find them on the [
 isomod is an application that allows the injection of files into ISO images (ISO9660) without re-building the image (kind of like in UltraISO). This tool is used here for making the modding of PaRappa the Rapper 2 easier and quicker.
 
 # To-do
-- Polish the GUI
+~~- Polish the GUI~~
 - Make things work and look better overall
 - Remove Sweets, and add more Noodles
