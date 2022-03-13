@@ -33,8 +33,8 @@ jobs:
           dir: '${{github.workspace}}/qt/'
           install-deps: 'true'
 
-      - name: List files in Qt
-        run: find ${{env.Qt5_Dir}}
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
 
       - uses: actions/checkout@v2
 
