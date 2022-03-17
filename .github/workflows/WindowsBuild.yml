@@ -33,8 +33,13 @@ jobs:
           dir: '${{github.workspace}}/qt/'
           install-deps: 'true'
 
-      - name: Install CMake
-        uses: lukka/get-cmake@latest
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.12
+        with:
+          cmake-version: '3.16.x'
+      
+      - name: See if CMake actually works...
+        run: cmake --version
 
       - uses: actions/checkout@v2
 
