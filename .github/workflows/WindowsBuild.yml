@@ -12,47 +12,38 @@ env:
 jobs:
   build:
     runs-on: windows-latest
-    defaults:
-        run:
-            shell: msys2 {0}
 
     steps:
-      - uses: msys2/setup-msys2@v2
-        with:
-            install: mingw-w64-x86_64-toolchain
-            msystem: mingw64
-            release: false
+    - uses: actions/checkout@v3
+    
+    - uses: msys2/setup-msys2@v2
+      with:
+        install: 
+          mingw-w64-x86_64-toolchain
+          cmake
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+        msystem: mingw64          
+        release: false
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v2
-        with:
-          version: '5.12.11'
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_mingw73'
-          dir: '${{github.workspace}}/qt/'
-          install-deps: 'true'
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '5.12.11'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_mingw73'
+        dir: '${{github.workspace}}/qt/'
+        install-deps: 'true'
 
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.12
-        with:
-          cmake-version: '3.16.x'
+    - name: Configure CMake
+      run: cmake -G "CodeBlocks - MinGW Makefiles" -DCMAKE_PREFIX_PATH="${{env.Qt5_Dir}}/lib/cmake/" -DQt5_DIR=${{env.Qt5_Dir}}/lib/cmake/Qt5/ -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
       
-      - name: See if CMake actually works...
-        run: cmake --version
-
-      - uses: actions/checkout@v2
-
-      - name: Configure project
-        env:
-          CMAKE_PREFIX_PATH: ${{env.Qt5_Dir}}
-        run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="${{env.Qt5_Dir}}/lib/cmake/" -DQt5_DIR=${{env.Qt5_Dir}}/lib/cmake/Qt5/ -G "CodeBlocks - MinGW Makefiles" -B '${{github.workspace}}'/build
-
-      - name: Build isomod-GUI
-        run: cmake --build '${{github.workspace}}'/build
-
-      - name: Upload the finished product
-        uses: actions/upload-artifact@master
-        with:
-          name: isomod-GUI-Windows
-          path: out
+    - name: Upload the finished product
+      uses: actions/upload-artifact@master
+      with:
+        name: isomod-GUI-Windows
+        path: out
